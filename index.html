@@ -1,0 +1,1351 @@
+<meta charset="utf-8">
+<title>Kleurproef</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Language" content="nl">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+
+<style>
+  :root{
+    --bg:#EEEBE3;
+    --surface:#FFFFFF;
+    --surface-2:#E4DFD2;
+    --surface-3:#DAD4C4;
+    --ink:#211F1B;
+    --ink-dim:#6E6858;
+    --ink-faint:#96907E;
+    --line:#D2CBB8;
+    --accent:#1F5C73;
+    --accent-strong:#164757;
+    --accent-ink:#FBF8F1;
+    --accent-2:#B9761F;
+    --danger:#B23B2E;
+    --danger-ink:#FBF8F1;
+    --good:#3C7A5B;
+    --shadow: 0 1px 2px rgba(33,31,27,0.06), 0 6px 20px rgba(33,31,27,0.08);
+    --radius: 10px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#171613;
+      --surface:#1E1C18;
+      --surface-2:#272420;
+      --surface-3:#322D26;
+      --ink:#EFEAE0;
+      --ink-dim:#B0A997;
+      --ink-faint:#786F5C;
+      --line:#3A362E;
+      --accent:#5AA0BD;
+      --accent-strong:#7BB6CC;
+      --accent-ink:#0C1113;
+      --accent-2:#E3A34F;
+      --danger:#D9695A;
+      --danger-ink:#1A0E0B;
+      --good:#63A585;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#171613;
+    --surface:#1E1C18;
+    --surface-2:#272420;
+    --surface-3:#322D26;
+    --ink:#EFEAE0;
+    --ink-dim:#B0A997;
+    --ink-faint:#786F5C;
+    --line:#3A362E;
+    --accent:#5AA0BD;
+    --accent-strong:#7BB6CC;
+    --accent-ink:#0C1113;
+    --accent-2:#E3A34F;
+    --danger:#D9695A;
+    --danger-ink:#1A0E0B;
+    --good:#63A585;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    color-scheme: dark;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+    font-size:15px;
+    line-height:1.45;
+  }
+  h1,h2,h3{ font-family:"Archivo", ui-sans-serif, system-ui, sans-serif; text-wrap:balance; margin:0; }
+  .mono{ font-family:"IBM Plex Mono", ui-monospace, monospace; }
+  button{ font-family:inherit; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* ---------- shell ---------- */
+  .app{ max-width:1360px; margin:0 auto; padding:20px 20px 60px; }
+
+  header.top{
+    display:flex; align-items:flex-end; justify-content:space-between; gap:16px;
+    flex-wrap:wrap;
+    padding-bottom:16px; margin-bottom:18px; border-bottom:1px solid var(--line);
+  }
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand .mark{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:34px; height:34px; border-radius:8px; background:var(--accent); color:var(--accent-ink); flex:none;
+  }
+  .brand h1{ font-size:22px; font-weight:800; letter-spacing:-0.01em; }
+  .brand .tag{ color:var(--ink-dim); font-size:13px; }
+
+  .top-actions{ display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; }
+  .field{ display:flex; flex-direction:column; gap:4px; }
+  .field label{ font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-faint); font-weight:600; }
+  .field input[type="text"]{
+    font:inherit; font-size:14px; padding:8px 10px; border-radius:8px; border:1px solid var(--line);
+    background:var(--surface); color:var(--ink); min-width:160px;
+  }
+
+  button.btn{
+    display:inline-flex; align-items:center; gap:7px; justify-content:center;
+    font-size:14px; font-weight:600; padding:9px 14px; border-radius:8px;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink);
+    cursor:pointer; white-space:nowrap;
+  }
+  button.btn:hover{ border-color:var(--ink-faint); }
+  button.btn:active{ transform:translateY(1px); }
+  button.btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  button.btn.primary:hover{ background:var(--accent-strong); border-color:var(--accent-strong); }
+  button.btn.ghost{ background:transparent; }
+  button.btn.small{ padding:6px 10px; font-size:12.5px; }
+  button.btn:disabled{ opacity:.45; cursor:not-allowed; }
+  button.icon-btn{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:32px; height:32px; border-radius:7px; border:1px solid transparent; background:transparent;
+    color:var(--ink-dim); cursor:pointer;
+  }
+  button.icon-btn:hover{ background:var(--surface-2); color:var(--ink); }
+  button.icon-btn[aria-pressed="true"]{ background:var(--accent); color:var(--accent-ink); }
+  svg.i{ width:17px; height:17px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* ---------- layout ---------- */
+  .layout{ display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start; }
+  @media (max-width: 880px){ .layout{ grid-template-columns:1fr; } }
+
+  .panel{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+
+  /* ---------- workspace ---------- */
+  .workspace-panel{ overflow:hidden; }
+  .toolbar{
+    display:flex; align-items:center; gap:14px; padding:10px 14px; border-bottom:1px solid var(--line);
+    background:var(--surface-2); flex-wrap:wrap;
+  }
+  .toolbar .group{ display:flex; align-items:center; gap:6px; }
+  .seg{ display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--surface); }
+  .seg button{
+    border:none; background:transparent; color:var(--ink-dim); padding:6px 11px; font-size:13px; font-weight:600;
+    display:flex; align-items:center; gap:6px; cursor:pointer; border-right:1px solid var(--line);
+  }
+  .seg button:last-child{ border-right:none; }
+  .seg button[aria-pressed="true"]{ background:var(--accent); color:var(--accent-ink); }
+  .toolbar .slider-wrap{ display:flex; align-items:center; gap:8px; min-width:170px; }
+  .toolbar .slider-wrap label{ font-size:12px; color:var(--ink-dim); white-space:nowrap; }
+  .toolbar input[type="range"]{ accent-color:var(--accent); width:110px; }
+  .toolbar .divider{ width:1px; align-self:stretch; background:var(--line); }
+  .toolbar .hint{ color:var(--ink-faint); font-size:12.5px; margin-left:auto; }
+
+  .stage{
+    position:relative; background:
+      linear-gradient(45deg, var(--surface-2) 25%, transparent 25%) -8px 0/16px 16px,
+      linear-gradient(-45deg, var(--surface-2) 25%, transparent 25%) -8px 0/16px 16px,
+      linear-gradient(45deg, transparent 75%, var(--surface-2) 75%) -8px 0/16px 16px,
+      linear-gradient(-45deg, transparent 75%, var(--surface-2) 75%) -8px 0/16px 16px,
+      var(--surface);
+    display:flex; align-items:center; justify-content:center; min-height:420px; touch-action:none;
+  }
+  .stage-inner{ position:relative; max-width:100%; }
+  .stage-inner canvas{ display:block; max-width:100%; height:auto; }
+  .stage canvas.overlay{ position:absolute; inset:0; width:100%; height:100%; }
+  .stage canvas#beforeCanvas{ position:absolute; inset:0; width:100%; height:100%; }
+
+  .sample-badge{
+    position:absolute; top:10px; left:10px; background:var(--ink); color:var(--bg);
+    font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    padding:5px 9px; border-radius:6px; opacity:.85; pointer-events:none;
+  }
+
+  .compare-handle{
+    position:absolute; top:0; bottom:0; width:0; cursor:ew-resize; z-index:5;
+  }
+  .compare-handle::before{ content:""; position:absolute; top:0; bottom:0; left:0; width:2px; background:#fff; box-shadow:0 0 0 1px rgba(0,0,0,.25); }
+  .compare-handle::after{
+    content:"↔"; position:absolute; top:50%; left:0; transform:translate(-50%,-50%);
+    width:34px; height:34px; border-radius:50%; background:#fff; color:#211F1B;
+    display:flex; align-items:center; justify-content:center; font-size:16px; box-shadow:var(--shadow);
+  }
+  .compare-label{
+    position:absolute; bottom:10px; font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+    background:rgba(20,18,15,.65); color:#fff; padding:4px 9px; border-radius:5px; pointer-events:none;
+  }
+
+  .dropzone{
+    margin:22px; border:1.5px dashed var(--line); border-radius:12px; padding:38px 20px;
+    display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; color:var(--ink-dim);
+    background:var(--surface);
+  }
+  .dropzone[hidden]{ display:none !important; }
+  .dropzone.drag{ border-color:var(--accent); background:var(--surface-2); color:var(--ink); }
+  .dropzone svg{ width:34px; height:34px; stroke:var(--ink-faint); }
+  .dropzone strong{ color:var(--ink); font-size:15px; }
+  .dropzone .or{ font-size:12px; color:var(--ink-faint); }
+
+  /* ---------- sidebar ---------- */
+  .sidebar{ display:flex; flex-direction:column; gap:14px; }
+  .sidebar .panel{ padding:14px; }
+  .sidebar h2{ font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-dim); margin-bottom:10px; }
+
+  .section-row{
+    display:grid; grid-template-columns:32px 1fr auto auto; align-items:center; gap:10px;
+    padding:9px 8px; border-radius:8px; border:1px solid transparent; cursor:pointer; position:relative;
+  }
+  .section-row + .section-row{ margin-top:2px; }
+  .section-row:hover{ background:var(--surface-2); }
+  .section-row.active{ background:var(--surface-2); border-color:var(--line); }
+  .section-row.active::before{
+    content:""; position:absolute; left:-1px; top:6px; bottom:6px; width:3px; border-radius:3px; background:var(--accent);
+  }
+  .swatch{
+    width:30px; height:30px; border-radius:7px; border:1px solid rgba(0,0,0,.15); cursor:pointer; flex:none;
+    box-shadow:inset 0 0 0 2px rgba(255,255,255,.35);
+  }
+  .section-meta{ min-width:0; }
+  .section-name{
+    font-size:13.5px; font-weight:600; border:none; background:transparent; color:var(--ink); width:100%;
+    padding:2px 0; font-family:inherit;
+  }
+  .section-sub{ display:flex; gap:8px; align-items:center; font-size:11px; color:var(--ink-faint); }
+  .section-row .row-actions{ display:flex; gap:2px; }
+
+  .add-section{
+    width:100%; margin-top:8px; border:1px dashed var(--line); background:transparent; border-radius:8px;
+    padding:9px; display:flex; align-items:center; justify-content:center; gap:6px; color:var(--ink-dim); cursor:pointer; font-weight:600; font-size:13px;
+  }
+  .add-section:hover{ border-color:var(--accent); color:var(--accent); }
+
+  .empty-hint{ color:var(--ink-faint); font-size:13px; padding:6px 2px; }
+
+  .design-row{
+    display:grid; grid-template-columns:1fr auto; align-items:center; gap:10px;
+    padding:9px 8px; border-radius:8px; border:1px solid transparent; position:relative;
+  }
+  .design-row + .design-row{ margin-top:2px; }
+  .design-row.active{ background:var(--surface-2); border-color:var(--line); }
+  .design-row .row-actions{ display:flex; align-items:center; gap:4px; }
+  .design-row.active::before{
+    content:""; position:absolute; left:-1px; top:6px; bottom:6px; width:3px; border-radius:3px; background:var(--accent-2);
+  }
+  .design-meta{ min-width:0; }
+  .design-name{
+    font-size:13.5px; font-weight:600; border:none; background:transparent; color:var(--ink); width:100%;
+    padding:2px 0; font-family:inherit; display:block;
+  }
+  .design-swatches{ display:flex; gap:4px; margin-top:4px; }
+  .design-swatches span{ width:16px; height:16px; border-radius:4px; border:1px solid rgba(0,0,0,.15); flex:none; }
+  .design-swatches em{ font-style:normal; font-size:11px; color:var(--ink-faint); align-self:center; }
+
+  /* palette popover */
+  .popover-backdrop{ position:fixed; inset:0; z-index:40; }
+  .popover{
+    position:absolute; z-index:41; width:264px; background:var(--surface); border:1px solid var(--line);
+    border-radius:10px; box-shadow:var(--shadow); padding:12px;
+  }
+  .popover h3{ font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-faint); margin-bottom:8px; }
+  .ral-search{
+    width:100%; font-family:inherit; font-size:13px; padding:7px 9px; border-radius:7px; border:1px solid var(--line);
+    background:var(--bg); color:var(--ink); margin-bottom:10px;
+  }
+  .no-matches{ font-size:12.5px; color:var(--ink-faint); padding:4px 2px 10px; }
+  .swatch-grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-bottom:10px; }
+  .swatch-grid button{
+    width:100%; aspect-ratio:1; border-radius:6px; border:1px solid rgba(0,0,0,.12); cursor:pointer; padding:0;
+    position:relative;
+  }
+  .swatch-grid button[aria-pressed="true"]::after{
+    content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff;
+    text-shadow:0 1px 2px rgba(0,0,0,.6); font-size:13px;
+  }
+  .palette-family{ font-size:10.5px; color:var(--ink-faint); margin:8px 0 4px; text-transform:uppercase; letter-spacing:.05em; }
+  .hex-row{ display:flex; gap:6px; align-items:center; margin-top:6px; }
+  .hex-row input[type="text"]{
+    flex:1; font-family:"IBM Plex Mono",monospace; font-size:13px; padding:6px 8px; border-radius:6px;
+    border:1px solid var(--line); background:var(--bg); color:var(--ink); min-width:0;
+  }
+  .hex-row input[type="color"]{ width:32px; height:32px; padding:0; border:1px solid var(--line); border-radius:6px; background:none; cursor:pointer; }
+  .color-name{ font-size:12px; color:var(--ink-dim); margin-top:6px; }
+
+  .tips{ font-size:12.5px; color:var(--ink-dim); }
+  .tips ul{ margin:6px 0 0; padding-left:18px; }
+  .tips li{ margin-bottom:5px; }
+
+  /* customer view */
+  body.customer-mode .sidebar,
+  body.customer-mode .toolbar,
+  body.customer-mode header.top .top-actions .hide-in-customer{ display:none !important; }
+  body.customer-mode .layout{ grid-template-columns:1fr; }
+  body.customer-mode .stage{ min-height:min(78vh, 760px); }
+
+  .toast{
+    position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(12px);
+    background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:8px; font-size:13.5px;
+    box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease; z-index:80;
+    display:flex; align-items:center; gap:8px;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.err{ background:var(--danger); color:var(--danger-ink); }
+
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+
+  .visually-hidden{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+</style>
+
+<div class="app">
+
+  <header class="top">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">
+        <svg class="i" viewBox="0 0 24 24"><path d="M3 21c1-4 2-6 5-9l8-8 3 3-8 8c-3 3-5 4-9 5Z"/><path d="M14 6l4 4"/></svg>
+      </span>
+      <div>
+        <h1>Kleurproef</h1>
+        <div class="tag">Laat de nieuwe kleur zien vóór de eerste kwast erover gaat</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <div class="field hide-in-customer">
+        <label for="customerInput">Klant</label>
+        <input id="customerInput" type="text" placeholder="bijv. Familie Bakker">
+      </div>
+      <button class="btn ghost hide-in-customer" id="uploadBtn" type="button">
+        <svg class="i" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+        Foto uploaden
+      </button>
+      <button class="btn ghost" id="customerViewBtn" type="button" aria-pressed="false">
+        <svg class="i" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        Klantweergave
+      </button>
+      <button class="btn primary" id="saveBtn" type="button">
+        <svg class="i" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4v12M6 12l6 6 6-6"/><path d="M4 20h16"/></svg>
+        Afbeelding opslaan
+      </button>
+    </div>
+  </header>
+
+  <input type="file" id="fileInput" accept="image/*" class="visually-hidden">
+
+  <div class="layout">
+
+    <div class="workspace-panel panel">
+      <div class="toolbar" id="toolbar">
+        <div class="group seg" role="group" aria-label="Gereedschap">
+          <button type="button" id="toolWand" aria-pressed="true">
+            <svg class="i" viewBox="0 0 24 24"><path d="M4 20 15 9"/><path d="M17 3l1 2 2 1-2 1-1 2-1-2-2-1 2-1Z"/><path d="M19 13l.6 1.4L21 15l-1.4.6L19 17l-.6-1.4L17 15l1.4-.6Z"/></svg>
+            Toverstaf
+          </button>
+          <button type="button" id="toolBrush" aria-pressed="false">
+            <svg class="i" viewBox="0 0 24 24"><path d="M9 15c-2 0-4 1-4 4 0 0 4 1 6-1"/><path d="M11 13 19 5a2.1 2.1 0 0 1 3 3l-8 8"/></svg>
+            Kwast
+          </button>
+        </div>
+        <div class="group seg" role="group" aria-label="Modus">
+          <button type="button" id="modeAdd" aria-pressed="true" title="Toevoegen aan selectie">
+            <svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            Toevoegen
+          </button>
+          <button type="button" id="modeErase" aria-pressed="false" title="Wissen uit selectie">
+            <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
+            Wissen
+          </button>
+        </div>
+        <div class="slider-wrap" id="wandSliderWrap">
+          <label for="toleranceRange">Tolerantie</label>
+          <input type="range" id="toleranceRange" min="2" max="80" value="26">
+        </div>
+        <div class="slider-wrap" id="brushSliderWrap" style="display:none">
+          <label for="brushRange">Kwastgrootte</label>
+          <input type="range" id="brushRange" min="6" max="120" value="34">
+        </div>
+        <div class="divider"></div>
+        <div class="group">
+          <button class="icon-btn" id="undoBtn" title="Laatste streek ongedaan maken" aria-label="Laatste streek ongedaan maken">
+            <svg class="i" viewBox="0 0 24 24"><path d="M9 8 4 12l5 4"/><path d="M4 12h11a5 5 0 0 1 0 10h-1"/></svg>
+          </button>
+          <button class="icon-btn" id="clearMaskBtn" title="Selectie van dit onderdeel wissen" aria-label="Selectie wissen">
+            <svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+          </button>
+          <button class="icon-btn" id="showMaskBtn" aria-pressed="false" title="Selectiemarkering aan/uit" aria-label="Selectiemarkering aan/uit">
+            <svg class="i" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="divider"></div>
+        <button class="btn ghost small" id="restoreOriginalBtn" type="button" title="Alle verf van alle onderdelen verwijderen">
+          <svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 21v-5h5"/></svg>
+          Origineel herstellen
+        </button>
+        <div class="hint" id="toolHint">Klik op een oppervlak op de foto om het te selecteren</div>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="stage-inner" id="stageInner">
+          <canvas id="outCanvas"></canvas>
+          <canvas id="beforeCanvas" class="overlay"></canvas>
+          <canvas id="maskCanvas" class="overlay"></canvas>
+          <div class="sample-badge" id="sampleBadge">Voorbeeldfoto</div>
+          <div class="compare-handle" id="compareHandle"></div>
+          <div class="compare-label" id="labelBefore" style="left:8px">Voor</div>
+          <div class="compare-label" id="labelAfter" style="right:8px">Na</div>
+        </div>
+        <div class="dropzone" id="dropzone" hidden>
+          <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+          <strong>Sleep hier een foto naartoe</strong>
+          <span>de kamer, de muur, de voorgevel — wat je ook aan het offreren bent</span>
+          <span class="or">of</span>
+          <button class="btn primary small" id="dropUploadBtn" type="button">Kies een foto</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="panel">
+        <h2>Ontwerpen</h2>
+        <div id="designsList"></div>
+        <button class="add-section" id="saveDesignBtn" type="button">
+          <svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M12 5v14M5 12h14"/></svg>
+          Huidige kleuren opslaan als ontwerp
+        </button>
+      </div>
+      <div class="panel">
+        <h2>Onderdelen</h2>
+        <div id="sectionsList"></div>
+        <button class="add-section" id="addSectionBtn" type="button">
+          <svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M12 5v14M5 12h14"/></svg>
+          Onderdeel toevoegen
+        </button>
+      </div>
+      <div class="panel tips">
+        <h2>Zo werkt het</h2>
+        <ul>
+          <li>Kies een onderdeel (bijv. <em>Muren</em>) en klik op het kleurvlak om een kleur te kiezen.</li>
+          <li>Gebruik de <strong>Toverstaf</strong> om op een oppervlak te klikken en het op kleur te selecteren — verhoog de Tolerantie als schaduwplekken worden gemist.</li>
+          <li>Kleuren worden gekoppeld aan de dichtstbijzijnde RAL Classic-code om verf te bestellen — controleer dit altijd met een fysieke RAL-waaier.</li>
+          <li>Schakel over naar <strong>Kwast</strong> om lastige randen zoals kozijnen of een raamkozijn met de hand te schilderen.</li>
+          <li>Sleep de ↔ greep op de foto om voor en na te vergelijken.</li>
+          <li><strong>Klantweergave</strong> haalt alle gereedschappen weg voor een opgeruimde blik.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ colour math ============ */
+  function hexToRgb(hex){
+    hex = hex.replace('#','');
+    if(hex.length===3) hex = hex.split('').map(function(c){return c+c;}).join('');
+    var n = parseInt(hex,16);
+    return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+  }
+  function rgbToHex(r,g,b){
+    return '#'+[r,g,b].map(function(v){ v=Math.max(0,Math.min(255,Math.round(v))); var s=v.toString(16); return s.length<2?'0'+s:s; }).join('');
+  }
+  function rgbToHsl(r,g,b){
+    r/=255; g/=255; b/=255;
+    var max=Math.max(r,g,b), min=Math.min(r,g,b);
+    var h=0,s=0,l=(max+min)/2;
+    if(max!==min){
+      var d=max-min;
+      s = l>0.5 ? d/(2-max-min) : d/(max+min);
+      if(max===r) h=(g-b)/d+(g<b?6:0);
+      else if(max===g) h=(b-r)/d+2;
+      else h=(r-g)/d+4;
+      h/=6;
+    }
+    return {h:h,s:s,l:l};
+  }
+  function hue2rgb(p,q,t){
+    if(t<0) t+=1; if(t>1) t-=1;
+    if(t<1/6) return p+(q-p)*6*t;
+    if(t<1/2) return q;
+    if(t<2/3) return p+(q-p)*(2/3-t)*6;
+    return p;
+  }
+  function hslToRgb(h,s,l){
+    if(s===0){ var v=l*255; return {r:v,g:v,b:v}; }
+    var q = l<0.5 ? l*(1+s) : l+s-l*s;
+    var p = 2*l-q;
+    return {
+      r: hue2rgb(p,q,h+1/3)*255,
+      g: hue2rgb(p,q,h)*255,
+      b: hue2rgb(p,q,h-1/3)*255
+    };
+  }
+
+  // RAL Classic — het systeem waarop de meeste Nederlandse verfleveranciers en -mengmachines zijn gebaseerd.
+  // De hexwaarden zijn gangbare schermbenaderingen van de fysieke standaard, geen gecertificeerde match.
+  var RAL_FAMILIES = [
+    { family:'Wit & grijs', colors:[
+      {ral:'9010', name:'Zuiverwit', hex:'#F1ECE1'},
+      {ral:'9016', name:'Verkeerswit', hex:'#F6F6F6'},
+      {ral:'9001', name:'Cremewit', hex:'#E9E0D2'},
+      {ral:'7035', name:'Lichtgrijs', hex:'#D7D7D7'},
+      {ral:'7040', name:'Raamgrijs', hex:'#9DA3A6'},
+      {ral:'7016', name:'Antracietgrijs', hex:'#383E42'},
+      {ral:'7021', name:'Zwartgrijs', hex:'#23282B'},
+      {ral:'9005', name:'Gitzwart', hex:'#0A0A0A'}
+    ]},
+    { family:'Beige & bruin', colors:[
+      {ral:'1013', name:'Parelwit', hex:'#E3D9C6'},
+      {ral:'1015', name:'Lichtivoor', hex:'#E6D2B5'},
+      {ral:'1001', name:'Beige', hex:'#C7B08B'},
+      {ral:'8025', name:'Bleekbruin', hex:'#755C48'},
+      {ral:'8017', name:'Chocoladebruin', hex:'#442F29'},
+      {ral:'8003', name:'Kleibruin', hex:'#7E4B26'}
+    ]},
+    { family:'Blauw', colors:[
+      {ral:'5015', name:'Hemelsblauw', hex:'#2271B3'},
+      {ral:'5010', name:'Gentiaanblauw', hex:'#13447C'},
+      {ral:'5013', name:'Kobaltblauw', hex:'#1F2C40'},
+      {ral:'5024', name:'Pastelblauw', hex:'#7391A8'},
+      {ral:'5002', name:'Ultramarijnblauw', hex:'#1D2C60'}
+    ]},
+    { family:'Groen', colors:[
+      {ral:'6005', name:'Mosgroen', hex:'#204A29'},
+      {ral:'6009', name:'Dennengroen', hex:'#27352A'},
+      {ral:'6011', name:'Resedagroen', hex:'#7C8C6B'},
+      {ral:'6021', name:'Bleekgroen', hex:'#94A88E'},
+      {ral:'6019', name:'Pastelgroen', hex:'#BDCCB4'}
+    ]},
+    { family:'Geel & oranje', colors:[
+      {ral:'1023', name:'Verkeersgeel', hex:'#FAD201'},
+      {ral:'1021', name:'Koolzaadgeel', hex:'#F6A800'},
+      {ral:'2004', name:'Zuiver oranje', hex:'#E1651E'},
+      {ral:'2011', name:'Dieporanje', hex:'#D97423'}
+    ]},
+    { family:'Rood', colors:[
+      {ral:'3000', name:'Vuurrood', hex:'#AF2B1E'},
+      {ral:'3003', name:'Robijnrood', hex:'#8F1B23'},
+      {ral:'3005', name:'Wijnrood', hex:'#59292E'},
+      {ral:'3009', name:'Oxiderood', hex:'#6B2E28'}
+    ]}
+  ];
+  var ALL_RAL = RAL_FAMILIES.reduce(function(acc,f){ return acc.concat(f.colors); }, []);
+  function ralLabel(c){ return 'RAL '+c.ral+' — '+c.name; }
+  function nearestRAL(hex){
+    var rgb = hexToRgb(hex);
+    var best=null, bestD=Infinity;
+    ALL_RAL.forEach(function(c){
+      var cr=hexToRgb(c.hex);
+      var d=(cr.r-rgb.r)*(cr.r-rgb.r)+(cr.g-rgb.g)*(cr.g-rgb.g)+(cr.b-rgb.b)*(cr.b-rgb.b);
+      if(d<bestD){ bestD=d; best=c; }
+    });
+    return { color:best, exact: bestD<=40 };
+  }
+  function closestRAL(hex){
+    var n = nearestRAL(hex);
+    if(!n.color) return '—';
+    return ralLabel(n.color) + (n.exact ? '' : ' (dichtstbijzijnde)');
+  }
+  function matchesRALQuery(c, q){
+    if(!q) return true;
+    q = q.trim().toLowerCase().replace(/^ral\s*/,'');
+    return c.ral.indexOf(q)===0 || c.name.toLowerCase().indexOf(q)!==-1;
+  }
+  function closestRALShort(hex){
+    var n = nearestRAL(hex);
+    return n.color ? 'RAL '+n.color.ral : '—';
+  }
+
+  /* ============ state ============ */
+  var MAX_DIM = 1400;
+  var state = {
+    width:0, height:0,
+    srcData:null,        // Uint8ClampedArray RGBA of original
+    outCanvasEl:null,
+    sections:[],          // {id,name,hex,mask:Uint8Array,visible,undoStack:[]}
+    activeId:null,
+    designs:[],           // {id,name,sections:[{id,name,hex,visible,mask}]}
+    currentDesignId:null,
+    tool:'wand',
+    mode:'add',
+    tolerance:26,
+    brushSize:34,
+    showMask:false,
+    isSample:true,
+    comparePos:50,
+    painting:false
+  };
+  var idSeed=1;
+
+  /* ============ dom ============ */
+  var el = {
+    outCanvas: document.getElementById('outCanvas'),
+    beforeCanvas: document.getElementById('beforeCanvas'),
+    maskCanvas: document.getElementById('maskCanvas'),
+    stage: document.getElementById('stage'),
+    stageInner: document.getElementById('stageInner'),
+    dropzone: document.getElementById('dropzone'),
+    sampleBadge: document.getElementById('sampleBadge'),
+    compareHandle: document.getElementById('compareHandle'),
+    sectionsList: document.getElementById('sectionsList'),
+    designsList: document.getElementById('designsList'),
+    toolbar: document.getElementById('toolbar'),
+    toolHint: document.getElementById('toolHint'),
+    toast: document.getElementById('toast'),
+    fileInput: document.getElementById('fileInput')
+  };
+  var outCtx = el.outCanvas.getContext('2d', {willReadFrequently:true});
+  var beforeCtx = el.beforeCanvas.getContext('2d');
+  var maskCtx = el.maskCanvas.getContext('2d');
+
+  function toast(msg, isErr){
+    el.toast.textContent = msg;
+    el.toast.classList.toggle('err', !!isErr);
+    el.toast.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function(){ el.toast.classList.remove('show'); }, 2600);
+  }
+
+  /* ============ image loading ============ */
+  function setImageFromCanvas(sourceCanvas, isSample){
+    var w = sourceCanvas.width, h = sourceCanvas.height;
+    var scale = Math.min(1, MAX_DIM / Math.max(w,h));
+    var tw = Math.max(1, Math.round(w*scale)), th = Math.max(1, Math.round(h*scale));
+    var tmp = document.createElement('canvas');
+    tmp.width = tw; tmp.height = th;
+    tmp.getContext('2d').drawImage(sourceCanvas, 0, 0, tw, th);
+    var data = tmp.getContext('2d').getImageData(0,0,tw,th);
+
+    state.width = tw; state.height = th;
+    state.srcData = data.data;
+    state.isSample = !!isSample;
+
+    [el.outCanvas, el.beforeCanvas, el.maskCanvas].forEach(function(c){ c.width=tw; c.height=th; });
+    beforeCtx.putImageData(data, 0,0);
+
+    el.sampleBadge.style.display = state.isSample ? '' : 'none';
+    el.dropzone.hidden = true;
+    el.stageInner.style.display = '';
+
+    state.sections.forEach(function(s){ s.mask = new Uint8Array(tw*th); s.undoStack=[]; });
+    renderSections();
+    scheduleRecolor();
+    updateCompareHandle();
+  }
+
+  function loadFile(file){
+    if(!file || !/^image\//.test(file.type)){ toast('Dit lijkt geen afbeelding te zijn.', true); return; }
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function(){
+      var c = document.createElement('canvas');
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext('2d').drawImage(img,0,0);
+      URL.revokeObjectURL(url);
+      // fresh sections for a new photo — saved designs are sized to the old photo's
+      // pixels, so they can't be reused here without corrupting their masks.
+      state.sections = [];
+      state.activeId = null;
+      state.designs = [];
+      state.currentDesignId = null;
+      renderDesigns();
+      setImageFromCanvas(c, false);
+      addSection('Muren', '#2271B3'); // RAL 5015 Hemelsblauw
+      toast('Foto geladen — kies een onderdeel en klik met de Toverstaf op een oppervlak.');
+    };
+    img.onerror = function(){ toast('Kon deze foto niet lezen.', true); };
+    img.src = url;
+  }
+
+  /* ============ procedural sample room (no external images allowed) ============ */
+  function buildSampleRoom(){
+    var w=1200, h=800;
+    var c = document.createElement('canvas'); c.width=w; c.height=h;
+    var g = c.getContext('2d');
+
+    // wall
+    var wallGrad = g.createLinearGradient(0,0,0,h*0.72);
+    wallGrad.addColorStop(0,'#DCD6C6');
+    wallGrad.addColorStop(1,'#CFC8B4');
+    g.fillStyle = wallGrad;
+    g.fillRect(0,0,w,h*0.72);
+
+    // subtle wall texture / light falloff so colour-matching has real work to do
+    for(var i=0;i<2600;i++){
+      var x=Math.random()*w, y=Math.random()*h*0.72;
+      var shade = (Math.random()-0.5)*14;
+      g.fillStyle = 'rgba('+(shade>0?255:0)+','+(shade>0?255:0)+','+(shade>0?255:0)+','+(Math.abs(shade)/140)+')';
+      g.fillRect(x,y,26,26);
+    }
+    var lightGrad = g.createRadialGradient(w*0.28,h*0.18,40, w*0.28,h*0.18, w*0.6);
+    lightGrad.addColorStop(0,'rgba(255,250,235,0.35)');
+    lightGrad.addColorStop(1,'rgba(255,250,235,0)');
+    g.fillStyle = lightGrad;
+    g.fillRect(0,0,w,h*0.72);
+
+    // floor
+    var floorGrad = g.createLinearGradient(0,h*0.72,0,h);
+    floorGrad.addColorStop(0,'#8A6B4C');
+    floorGrad.addColorStop(1,'#6E5238');
+    g.fillStyle = floorGrad;
+    g.fillRect(0,h*0.72,w,h*0.28);
+    g.strokeStyle='rgba(0,0,0,0.12)'; g.lineWidth=2;
+    for(var fx=-h; fx<w; fx+=54){ g.beginPath(); g.moveTo(fx,h*0.72); g.lineTo(fx+ h*0.4, h); g.stroke(); }
+
+    // baseboard trim
+    g.fillStyle = '#F1EDE2';
+    g.fillRect(0, h*0.70, w, h*0.02);
+    g.strokeStyle='rgba(0,0,0,0.08)'; g.strokeRect(0,h*0.70,w,h*0.02);
+
+    // window
+    var winX=w*0.62, winY=h*0.14, winW=w*0.27, winH=h*0.40;
+    g.fillStyle='#F1EDE2';
+    g.fillRect(winX-18, winY-18, winW+36, winH+36); // frame
+    var skyGrad = g.createLinearGradient(0,winY,0,winY+winH);
+    skyGrad.addColorStop(0,'#BFE0EE'); skyGrad.addColorStop(1,'#E8F3E9');
+    g.fillStyle=skyGrad;
+    g.fillRect(winX,winY,winW,winH);
+    g.strokeStyle='#F1EDE2'; g.lineWidth=10;
+    g.beginPath(); g.moveTo(winX+winW/2,winY); g.lineTo(winX+winW/2,winY+winH); g.moveTo(winX,winY+winH/2); g.lineTo(winX+winW,winY+winH/2); g.stroke();
+    g.strokeStyle='rgba(0,0,0,0.15)'; g.lineWidth=3; g.strokeRect(winX-18,winY-18,winW+36,winH+36);
+
+    // door
+    var doorX=w*0.10, doorY=h*0.20, doorW=w*0.14, doorH=h*0.50;
+    g.fillStyle='#F1EDE2';
+    g.fillRect(doorX-14,doorY-14,doorW+28,doorH+14); // frame (open top+sides)
+    g.fillStyle='#8B5E3C';
+    g.fillRect(doorX,doorY,doorW,doorH);
+    g.fillStyle='rgba(255,255,255,0.12)';
+    g.fillRect(doorX+doorW*0.14, doorY+doorH*0.08, doorW*0.72, doorH*0.36);
+    g.fillRect(doorX+doorW*0.14, doorY+doorH*0.52, doorW*0.72, doorH*0.36);
+    g.fillStyle='#D8B34A';
+    g.beginPath(); g.arc(doorX+doorW*0.86, doorY+doorH*0.52, 6,0,Math.PI*2); g.fill();
+
+    var regions = {
+      wallRect: {x:0,y:0,w:w,h:h*0.70, excl:[
+        {x:winX-18,y:winY-18,w:winW+36,h:winH+36},
+        {x:doorX-14,y:doorY-14,w:doorW+28,h:doorH+14}
+      ]},
+      trimRects: [
+        {x:0,y:h*0.70,w:w,h:h*0.02},
+        {x:winX-18,y:winY-18,w:winW+36,h:winH+36, excl:[{x:winX,y:winY,w:winW,h:winH}]},
+        {x:doorX-14,y:doorY-14,w:doorW+28,h:doorH+14, excl:[{x:doorX,y:doorY,w:doorW,h:doorH}]}
+      ]
+    };
+    return {canvas:c, regions:regions, w:w, h:h};
+  }
+
+  function maskFromRegion(w,h,rects){
+    var mask = new Uint8Array(w*h);
+    rects.forEach(function(r){
+      var x0=Math.max(0,Math.round(r.x)), y0=Math.max(0,Math.round(r.y));
+      var x1=Math.min(w,Math.round(r.x+r.w)), y1=Math.min(h,Math.round(r.y+r.h));
+      for(var y=y0;y<y1;y++){
+        for(var x=x0;x<x1;x++){
+          var excluded=false;
+          if(r.excl){ for(var e=0;e<r.excl.length;e++){ var ex=r.excl[e]; if(x>=ex.x&&x<ex.x+ex.w&&y>=ex.y&&y<ex.y+ex.h){ excluded=true; break; } } }
+          if(!excluded) mask[y*w+x]=255;
+        }
+      }
+    });
+    return mask;
+  }
+
+  /* ============ sections ============ */
+  function addSection(name, hex){
+    var s = {
+      id:'s'+(idSeed++),
+      name: name || ('Onderdeel '+ (state.sections.length+1)),
+      hex: hex || ALL_RAL[state.sections.length % ALL_RAL.length].hex,
+      mask: new Uint8Array(state.width*state.height),
+      visible:true,
+      undoStack:[]
+    };
+    state.sections.push(s);
+    state.activeId = s.id;
+    renderSections();
+    updateToolbarState();
+    return s;
+  }
+  function getActive(){ return state.sections.find(function(s){ return s.id===state.activeId; }) || null; }
+  function pushUndo(section){
+    section.undoStack.push(section.mask.slice());
+    if(section.undoStack.length>15) section.undoStack.shift();
+  }
+  function undo(){
+    var s = getActive(); if(!s || !s.undoStack.length) return;
+    s.mask = s.undoStack.pop();
+    scheduleRecolor(); drawMaskOverlay();
+  }
+
+  function renderSections(){
+    el.sectionsList.innerHTML='';
+    if(!state.sections.length){
+      var p = document.createElement('div');
+      p.className='empty-hint';
+      p.textContent = 'Nog geen onderdelen — voeg er een toe om de foto te kleuren.';
+      el.sectionsList.appendChild(p);
+    }
+    state.sections.forEach(function(s){
+      var coverage = 0;
+      if(s.mask && s.mask.length){
+        var sum=0; for(var i=0;i<s.mask.length;i+=37){ sum += s.mask[i]>0?1:0; }
+        coverage = Math.round(sum / Math.ceil(s.mask.length/37) * 100);
+      }
+      var row = document.createElement('div');
+      row.className='section-row'+(s.id===state.activeId?' active':'');
+      row.setAttribute('data-id', s.id);
+
+      var sw = document.createElement('button');
+      sw.className='swatch'; sw.type='button'; sw.style.background=s.hex;
+      sw.title='Kleur wijzigen'; sw.setAttribute('aria-label','Kleur wijzigen voor '+s.name);
+      sw.addEventListener('click', function(ev){ ev.stopPropagation(); openPalette(s, sw); });
+
+      var meta = document.createElement('div'); meta.className='section-meta';
+      var nameInput = document.createElement('input');
+      nameInput.className='section-name'; nameInput.type='text'; nameInput.value=s.name;
+      nameInput.addEventListener('click', function(ev){ ev.stopPropagation(); });
+      nameInput.addEventListener('input', function(){ s.name = nameInput.value; });
+      var sub = document.createElement('div'); sub.className='section-sub';
+      var ralSpan = document.createElement('span'); ralSpan.className='mono'; ralSpan.textContent=closestRALShort(s.hex);
+      var covSpan = document.createElement('span'); covSpan.className='mono'; covSpan.textContent='~'+coverage+'% geschilderd';
+      sub.appendChild(ralSpan); sub.appendChild(document.createTextNode('·')); sub.appendChild(covSpan);
+      meta.appendChild(nameInput); meta.appendChild(sub);
+
+      var eyeBtn = document.createElement('button');
+      eyeBtn.className='icon-btn'; eyeBtn.type='button'; eyeBtn.setAttribute('aria-pressed', String(s.visible));
+      eyeBtn.title = s.visible ? 'Dit onderdeel verbergen' : 'Dit onderdeel tonen';
+      eyeBtn.innerHTML = '<svg class="i" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+      eyeBtn.style.opacity = s.visible ? '1':'.4';
+      eyeBtn.addEventListener('click', function(ev){ ev.stopPropagation(); s.visible=!s.visible; renderSections(); scheduleRecolor(); });
+
+      var delBtn = document.createElement('button');
+      delBtn.className='icon-btn'; delBtn.type='button'; delBtn.title='Onderdeel verwijderen'; delBtn.setAttribute('aria-label','Verwijder '+s.name);
+      delBtn.innerHTML = '<svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
+      delBtn.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        state.sections = state.sections.filter(function(x){ return x.id!==s.id; });
+        if(state.activeId===s.id) state.activeId = state.sections.length? state.sections[state.sections.length-1].id : null;
+        renderSections(); updateToolbarState(); scheduleRecolor();
+      });
+
+      var actions = document.createElement('div'); actions.className='row-actions';
+      actions.appendChild(eyeBtn); actions.appendChild(delBtn);
+
+      row.appendChild(sw); row.appendChild(meta); row.appendChild(actions);
+      row.addEventListener('click', function(){ state.activeId = s.id; renderSections(); updateToolbarState(); drawMaskOverlay(); });
+      el.sectionsList.appendChild(row);
+    });
+  }
+
+  /* ============ designs (saved colour options to compare) ============ */
+  function cloneSections(sections){
+    return sections.map(function(s){
+      return { id:s.id, name:s.name, hex:s.hex, visible:s.visible, mask:s.mask.slice() };
+    });
+  }
+  function saveDesign(){
+    if(!state.sections.length){ toast('Voeg eerst onderdelen en kleuren toe.', true); return; }
+    var design = { id:'d'+(idSeed++), name:'Ontwerp '+(state.designs.length+1), sections:cloneSections(state.sections) };
+    state.designs.push(design);
+    state.currentDesignId = design.id;
+    renderDesigns();
+    toast('Opgeslagen als “'+design.name+'”.');
+  }
+  function loadDesign(design){
+    state.sections = cloneSections(design.sections).map(function(s){ s.undoStack=[]; return s; });
+    state.activeId = state.sections.length ? state.sections[0].id : null;
+    state.currentDesignId = design.id;
+    renderSections();
+    renderDesigns();
+    updateToolbarState();
+    scheduleRecolor();
+    drawMaskOverlay();
+  }
+  function renderDesigns(){
+    el.designsList.innerHTML='';
+    if(!state.designs.length){
+      var p = document.createElement('div');
+      p.className='empty-hint';
+      p.textContent = 'Nog geen ontwerpen — sla de huidige kleuren op om ze straks naast elkaar te vergelijken.';
+      el.designsList.appendChild(p);
+    }
+    state.designs.forEach(function(d){
+      var row = document.createElement('div');
+      row.className='design-row'+(d.id===state.currentDesignId?' active':'');
+
+      var meta = document.createElement('div'); meta.className='design-meta';
+      var nameInput = document.createElement('input');
+      nameInput.className='design-name'; nameInput.type='text'; nameInput.value=d.name;
+      nameInput.addEventListener('click', function(ev){ ev.stopPropagation(); });
+      nameInput.addEventListener('input', function(){ d.name = nameInput.value; });
+      var swatches = document.createElement('div'); swatches.className='design-swatches';
+      d.sections.slice(0,6).forEach(function(s){
+        var sw = document.createElement('span'); sw.style.background=s.hex; sw.title=s.name;
+        swatches.appendChild(sw);
+      });
+      if(d.sections.length>6){
+        var more = document.createElement('em'); more.textContent='+'+(d.sections.length-6);
+        swatches.appendChild(more);
+      }
+      meta.appendChild(nameInput); meta.appendChild(swatches);
+
+      var actions = document.createElement('div'); actions.className='row-actions';
+      var loadBtn = document.createElement('button');
+      loadBtn.className='btn ghost small'; loadBtn.type='button';
+      loadBtn.textContent = 'Laden';
+      loadBtn.title = 'Vervangt de huidige kleuren door dit ontwerp';
+      loadBtn.addEventListener('click', function(ev){ ev.stopPropagation(); loadDesign(d); });
+
+      var delBtn = document.createElement('button');
+      delBtn.className='icon-btn'; delBtn.type='button'; delBtn.title='Ontwerp verwijderen'; delBtn.setAttribute('aria-label','Verwijder '+d.name);
+      delBtn.innerHTML = '<svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
+      delBtn.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        state.designs = state.designs.filter(function(x){ return x.id!==d.id; });
+        if(state.currentDesignId===d.id) state.currentDesignId=null;
+        renderDesigns();
+      });
+      actions.appendChild(loadBtn); actions.appendChild(delBtn);
+
+      row.appendChild(meta); row.appendChild(actions);
+      el.designsList.appendChild(row);
+    });
+  }
+  document.getElementById('saveDesignBtn').addEventListener('click', saveDesign);
+
+  /* ============ palette popover ============ */
+  var openPop = null;
+  function closePalette(){
+    if(openPop){ openPop.remove(); openPop=null; }
+    var bd = document.querySelector('.popover-backdrop'); if(bd) bd.remove();
+  }
+  function openPalette(section, anchorEl){
+    closePalette();
+    var backdrop = document.createElement('div'); backdrop.className='popover-backdrop';
+    backdrop.addEventListener('click', closePalette);
+    document.body.appendChild(backdrop);
+
+    var pop = document.createElement('div'); pop.className='popover';
+    var rect = anchorEl.getBoundingClientRect();
+    var top = rect.bottom + window.scrollY + 8;
+    var left = Math.min(rect.left + window.scrollX, window.innerWidth - 280);
+    pop.style.top = top+'px'; pop.style.left = left+'px';
+
+    var h = document.createElement('h3'); h.textContent = 'RAL-kleur voor “'+section.name+'”';
+    pop.appendChild(h);
+
+    var searchInput = document.createElement('input');
+    searchInput.type='text'; searchInput.className='ral-search';
+    searchInput.placeholder='Zoek op RAL-nummer of naam (bijv. 5015 of blauw)';
+    pop.appendChild(searchInput);
+
+    var swatchArea = document.createElement('div');
+    pop.appendChild(swatchArea);
+
+    function renderSwatches(query){
+      swatchArea.innerHTML='';
+      var q = (query||'').trim();
+      if(q){
+        var matches = ALL_RAL.filter(function(c){ return matchesRALQuery(c,q); });
+        if(!matches.length){
+          var none = document.createElement('div'); none.className='no-matches';
+          none.textContent = 'Geen kleuren gevonden voor “'+query+'”.';
+          swatchArea.appendChild(none);
+          return;
+        }
+        swatchArea.appendChild(buildSwatchGrid(matches));
+      } else {
+        RAL_FAMILIES.forEach(function(fam){
+          var famLabel = document.createElement('div'); famLabel.className='palette-family'; famLabel.textContent=fam.family;
+          swatchArea.appendChild(famLabel);
+          swatchArea.appendChild(buildSwatchGrid(fam.colors));
+        });
+      }
+    }
+    function buildSwatchGrid(colors){
+      var grid = document.createElement('div'); grid.className='swatch-grid';
+      colors.forEach(function(c){
+        var b = document.createElement('button'); b.type='button'; b.style.background=c.hex; b.title=ralLabel(c);
+        b.setAttribute('aria-pressed', String(c.hex.toLowerCase()===section.hex.toLowerCase()));
+        b.addEventListener('click', function(){ setSectionColor(section, c.hex); renderSwatches(searchInput.value); refreshPaletteNameLine(section); });
+        grid.appendChild(b);
+      });
+      return grid;
+    }
+    searchInput.addEventListener('input', function(){ renderSwatches(searchInput.value); });
+    renderSwatches('');
+
+    var hexRow = document.createElement('div'); hexRow.className='hex-row';
+    var colorInput = document.createElement('input'); colorInput.type='color'; colorInput.value=section.hex;
+    var textInput = document.createElement('input'); textInput.type='text'; textInput.className='mono'; textInput.value=section.hex.toUpperCase();
+    colorInput.addEventListener('input', function(){ textInput.value=colorInput.value.toUpperCase(); setSectionColor(section, colorInput.value); refreshPaletteNameLine(section); });
+    textInput.addEventListener('change', function(){
+      var v = textInput.value.trim();
+      if(/^#?[0-9a-fA-F]{6}$/.test(v)){ v = v[0]==='#'?v:'#'+v; colorInput.value=v; setSectionColor(section,v); refreshPaletteNameLine(section); }
+      else toast('Voer een 6-cijferige hexcode in, zoals #2271B3', true);
+    });
+    hexRow.appendChild(colorInput); hexRow.appendChild(textInput);
+    pop.appendChild(hexRow);
+
+    var nameLine = document.createElement('div'); nameLine.className='color-name';
+    nameLine.textContent = 'Dichtstbijzijnde RAL-kleur: ' + closestRAL(section.hex);
+    pop.appendChild(nameLine);
+    var caveat = document.createElement('div'); caveat.className='color-name';
+    caveat.style.opacity='.75';
+    caveat.textContent = 'Alleen schermkleur — controleer altijd met een fysieke RAL-waaier voor je verf laat mengen.';
+    pop.appendChild(caveat);
+
+    document.body.appendChild(pop);
+    openPop = pop;
+    searchInput.focus();
+  }
+  function refreshPaletteNameLine(section){
+    if(!openPop) return;
+    var nameLine = openPop.querySelector('.color-name');
+    if(nameLine) nameLine.textContent = 'Dichtstbijzijnde RAL-kleur: ' + closestRAL(section.hex);
+  }
+  function setSectionColor(section, hex){
+    section.hex = hex;
+    renderSections();
+    scheduleRecolor();
+  }
+
+  /* ============ recolour render ============ */
+  var recolorPending=false;
+  function scheduleRecolor(){
+    if(recolorPending) return;
+    recolorPending=true;
+    requestAnimationFrame(function(){ recolorPending=false; recolor(); });
+  }
+  function recolor(){
+    if(!state.srcData) return;
+    var w=state.width, h=state.height;
+    var out = new Uint8ClampedArray(state.srcData); // copy original
+    state.sections.forEach(function(s){
+      if(!s.visible) return;
+      var t = hexToRgb(s.hex);
+      var thsl = rgbToHsl(t.r,t.g,t.b);
+      // Keeping the wall's own lightness and only swapping hue/saturation looks right for
+      // a mid-tone colour, but for a near-black or near-white target it just tints the
+      // original brightness range — e.g. RAL 9005 (jet black) on a light wall came out grey.
+      // Instead: build lightness around the TARGET's own lightness, and only let the
+      // original pixel nudge it up/down (the shading/texture) by an amount that shrinks
+      // the closer the target sits to pure black or white — matte black paint really does
+      // hide texture almost completely, a mid blue shows it fully.
+      var shading = Math.min(0.9, Math.max(0.12, 2*Math.min(thsl.l, 1-thsl.l)));
+      var mask = s.mask;
+      for(var i=0;i<mask.length;i++){
+        var a = mask[i];
+        if(!a) continue;
+        var p = i*4;
+        var r=out[p], g=out[p+1], b=out[p+2];
+        var l = (Math.max(r,g,b)+Math.min(r,g,b))/2/255;
+        var newL = Math.max(0, Math.min(1, thsl.l + (l-0.5)*shading));
+        var nc = hslToRgb(thsl.h, thsl.s, newL);
+        var f = a/255;
+        out[p]   = r + (nc.r-r)*f;
+        out[p+1] = g + (nc.g-g)*f;
+        out[p+2] = b + (nc.b-b)*f;
+      }
+    });
+    var imgData = new ImageData(out, w, h);
+    outCtx.putImageData(imgData, 0, 0);
+  }
+
+  function drawMaskOverlay(){
+    var w=state.width, h=state.height;
+    maskCtx.clearRect(0,0,w,h);
+    if(!state.showMask) return;
+    var s = getActive();
+    if(!s) return;
+    var img = maskCtx.createImageData(w,h);
+    var t = hexToRgb('#1F5C73');
+    for(var i=0;i<s.mask.length;i++){
+      var a = s.mask[i];
+      if(!a) continue;
+      var p=i*4;
+      img.data[p]=255; img.data[p+1]=90; img.data[p+2]=40; img.data[p+3]=Math.round(a*0.38);
+    }
+    maskCtx.putImageData(img,0,0);
+  }
+
+  /* ============ tools: wand + brush ============ */
+  function canvasPointFromEvent(ev){
+    var rect = el.maskCanvas.getBoundingClientRect();
+    var x = (ev.clientX - rect.left) / rect.width * state.width;
+    var y = (ev.clientY - rect.top) / rect.height * state.height;
+    return { x: Math.max(0,Math.min(state.width-1, Math.round(x))), y: Math.max(0,Math.min(state.height-1, Math.round(y))) };
+  }
+
+  function floodFill(section, sx, sy, tolerance, erase){
+    var w=state.width, h=state.height, data=state.srcData;
+    var idx0 = sy*w+sx;
+    var r0=data[idx0*4], g0=data[idx0*4+1], b0=data[idx0*4+2];
+    var threshold = (tolerance/100)*260;
+    var visited = new Uint8Array(w*h);
+    var stack = [idx0];
+    visited[idx0]=1;
+    var touched = [];
+    while(stack.length){
+      var idx = stack.pop();
+      var x = idx % w, y = (idx - x)/w;
+      var p = idx*4;
+      var dr=data[p]-r0, dg=data[p+1]-g0, db=data[p+2]-b0;
+      var dist = Math.sqrt(dr*dr+dg*dg+db*db);
+      if(dist>threshold) continue;
+      touched.push(idx);
+      if(x>0 && !visited[idx-1]){ visited[idx-1]=1; stack.push(idx-1); }
+      if(x<w-1 && !visited[idx+1]){ visited[idx+1]=1; stack.push(idx+1); }
+      if(y>0 && !visited[idx-w]){ visited[idx-w]=1; stack.push(idx-w); }
+      if(y<h-1 && !visited[idx+w]){ visited[idx+w]=1; stack.push(idx+w); }
+    }
+    pushUndo(section);
+    for(var k=0;k<touched.length;k++){ section.mask[touched[k]] = erase ? 0 : 255; }
+  }
+
+  function brushStroke(section, cx, cy, radius, erase, isFirst){
+    if(isFirst) pushUndo(section);
+    var w=state.width, h=state.height;
+    var x0=Math.max(0,Math.floor(cx-radius)), x1=Math.min(w-1,Math.ceil(cx+radius));
+    var y0=Math.max(0,Math.floor(cy-radius)), y1=Math.min(h-1,Math.ceil(cy+radius));
+    var soft = radius*0.7;
+    for(var y=y0;y<=y1;y++){
+      for(var x=x0;x<=x1;x++){
+        var dx=x-cx, dy=y-cy, d=Math.sqrt(dx*dx+dy*dy);
+        if(d>radius) continue;
+        var a = d<=soft ? 255 : Math.round(255*(1-(d-soft)/(radius-soft)));
+        var idx=y*w+x;
+        if(erase){ section.mask[idx] = Math.max(0, section.mask[idx]-a); }
+        else { section.mask[idx] = Math.max(section.mask[idx], a); }
+      }
+    }
+  }
+
+  var lastPaintPoint=null;
+  el.maskCanvas.addEventListener('pointerdown', function(ev){
+    var s = getActive();
+    if(!s || !state.srcData) return;
+    el.maskCanvas.setPointerCapture(ev.pointerId);
+    var pt = canvasPointFromEvent(ev);
+    if(state.tool==='wand'){
+      floodFill(s, pt.x, pt.y, state.tolerance, state.mode==='erase');
+      scheduleRecolor(); drawMaskOverlay();
+    } else {
+      state.painting = true;
+      brushStroke(s, pt.x, pt.y, state.brushSize/2, state.mode==='erase', true);
+      lastPaintPoint = pt;
+      scheduleRecolor(); drawMaskOverlay();
+    }
+  });
+  el.maskCanvas.addEventListener('pointermove', function(ev){
+    if(!state.painting) return;
+    var s = getActive(); if(!s) return;
+    var pt = canvasPointFromEvent(ev);
+    brushStroke(s, pt.x, pt.y, state.brushSize/2, state.mode==='erase', false);
+    lastPaintPoint = pt;
+    scheduleRecolor(); drawMaskOverlay();
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(evName){
+    el.maskCanvas.addEventListener(evName, function(){ state.painting=false; });
+  });
+
+  /* ============ toolbar wiring ============ */
+  var toolWand=document.getElementById('toolWand'), toolBrush=document.getElementById('toolBrush');
+  var modeAdd=document.getElementById('modeAdd'), modeErase=document.getElementById('modeErase');
+  var wandWrap=document.getElementById('wandSliderWrap'), brushWrap=document.getElementById('brushSliderWrap');
+  var toleranceRange=document.getElementById('toleranceRange'), brushRange=document.getElementById('brushRange');
+
+  function setTool(tool){
+    state.tool=tool;
+    toolWand.setAttribute('aria-pressed', String(tool==='wand'));
+    toolBrush.setAttribute('aria-pressed', String(tool==='brush'));
+    wandWrap.style.display = tool==='wand' ? '' : 'none';
+    brushWrap.style.display = tool==='brush' ? '' : 'none';
+    el.toolHint.textContent = tool==='wand'
+      ? 'Klik op een oppervlak op de foto om het op kleur te selecteren'
+      : 'Sleep over de foto om de selectie met de hand te schilderen';
+  }
+  toolWand.addEventListener('click', function(){ setTool('wand'); });
+  toolBrush.addEventListener('click', function(){ setTool('brush'); });
+  modeAdd.addEventListener('click', function(){ state.mode='add'; modeAdd.setAttribute('aria-pressed','true'); modeErase.setAttribute('aria-pressed','false'); });
+  modeErase.addEventListener('click', function(){ state.mode='erase'; modeAdd.setAttribute('aria-pressed','false'); modeErase.setAttribute('aria-pressed','true'); });
+  toleranceRange.addEventListener('input', function(){ state.tolerance = +toleranceRange.value; });
+  brushRange.addEventListener('input', function(){ state.brushSize = +brushRange.value; });
+  document.getElementById('undoBtn').addEventListener('click', undo);
+  document.getElementById('clearMaskBtn').addEventListener('click', function(){
+    var s=getActive(); if(!s) return; pushUndo(s); s.mask.fill(0); scheduleRecolor(); drawMaskOverlay(); renderSections();
+  });
+  var showMaskBtn = document.getElementById('showMaskBtn');
+  showMaskBtn.addEventListener('click', function(){
+    state.showMask = !state.showMask;
+    showMaskBtn.setAttribute('aria-pressed', String(state.showMask));
+    drawMaskOverlay();
+  });
+  document.getElementById('restoreOriginalBtn').addEventListener('click', function(){
+    if(!state.sections.length){ return; }
+    state.sections.forEach(function(s){ pushUndo(s); s.mask.fill(0); });
+    scheduleRecolor(); drawMaskOverlay(); renderSections();
+    toast('Origineel hersteld — alle verf verwijderd.');
+  });
+
+  function updateToolbarState(){
+    var has = !!getActive();
+    el.toolbar.style.opacity = has ? '1' : '.5';
+    el.toolbar.querySelectorAll('button, input').forEach(function(n){ n.disabled = !has; });
+    if(!has) el.toolHint.textContent = 'Voeg een onderdeel toe of selecteer er een om te beginnen';
+  }
+
+  document.getElementById('addSectionBtn').addEventListener('click', function(){
+    if(!state.srcData){ toast('Upload eerst een foto (of gebruik de voorbeeldfoto).', true); return; }
+    addSection();
+  });
+
+  /* ============ before/after compare ============ */
+  function updateCompareHandle(){
+    var pos = state.comparePos;
+    el.beforeCanvas.style.clipPath = 'inset(0 '+(100-pos)+'% 0 0)';
+    // the selection highlight only makes sense over the recoloured "after" side —
+    // left uncut it washes its tint across the original "before" photo too.
+    el.maskCanvas.style.clipPath = 'inset(0 0 0 '+pos+'%)';
+    el.compareHandle.style.left = pos+'%';
+    document.getElementById('labelBefore').style.opacity = pos>8 ? '1':'0';
+    document.getElementById('labelAfter').style.opacity = pos<92 ? '1':'0';
+  }
+  var draggingHandle=false;
+  function setComparePosFromEvent(ev){
+    var rect = el.stageInner.getBoundingClientRect();
+    var pct = (ev.clientX - rect.left)/rect.width*100;
+    state.comparePos = Math.max(0, Math.min(100, pct));
+    updateCompareHandle();
+  }
+  el.compareHandle.addEventListener('pointerdown', function(ev){ draggingHandle=true; el.compareHandle.setPointerCapture(ev.pointerId); });
+  el.compareHandle.addEventListener('pointermove', function(ev){ if(draggingHandle) setComparePosFromEvent(ev); });
+  ['pointerup','pointercancel'].forEach(function(n){ el.compareHandle.addEventListener(n, function(){ draggingHandle=false; }); });
+  el.stageInner.addEventListener('dblclick', function(){ state.comparePos = state.comparePos>50? 0:100; updateCompareHandle(); });
+
+  /* ============ upload / dnd ============ */
+  document.getElementById('uploadBtn').addEventListener('click', function(){ el.fileInput.click(); });
+  document.getElementById('dropUploadBtn').addEventListener('click', function(){ el.fileInput.click(); });
+  el.fileInput.addEventListener('change', function(){ if(el.fileInput.files[0]) loadFile(el.fileInput.files[0]); });
+  ['dragenter','dragover'].forEach(function(n){
+    el.stage.addEventListener(n, function(ev){ ev.preventDefault(); el.dropzone.hidden=false; el.dropzone.classList.add('drag'); el.stageInner.style.display='none'; });
+  });
+  ['dragleave','drop'].forEach(function(n){
+    el.stage.addEventListener(n, function(ev){
+      ev.preventDefault(); el.dropzone.classList.remove('drag');
+      if(n==='drop' && ev.dataTransfer.files[0]) loadFile(ev.dataTransfer.files[0]);
+      else { el.dropzone.hidden = !!state.srcData; el.stageInner.style.display = state.srcData? '' : 'none'; }
+    });
+  });
+
+  /* ============ customer view ============ */
+  var customerBtn = document.getElementById('customerViewBtn');
+  customerBtn.addEventListener('click', function(){
+    var on = !document.body.classList.contains('customer-mode');
+    document.body.classList.toggle('customer-mode', on);
+    customerBtn.setAttribute('aria-pressed', String(on));
+    customerBtn.querySelector('svg') && (customerBtn.lastChild.textContent = on ? ' Terug naar bewerken' : ' Klantweergave');
+  });
+
+  /* ============ save (downloads capability) ============ */
+  document.getElementById('saveBtn').addEventListener('click', function(){
+    if(!state.srcData){ toast('Nog niets om op te slaan — voeg eerst een foto toe.', true); return; }
+    saveComposite();
+  });
+  function saveComposite(){
+    var w=state.width, h=state.height;
+    var gap = Math.round(w*0.02);
+    var footerH = Math.round(h*0.09);
+    var comp = document.createElement('canvas');
+    comp.width = w*2+gap; comp.height = h+footerH;
+    var g = comp.getContext('2d');
+    g.fillStyle = '#EEEBE3'; g.fillRect(0,0,comp.width,comp.height);
+    g.drawImage(beforeSourceCanvas(), 0,0);
+    g.drawImage(el.outCanvas, w+gap, 0);
+    var tagH = Math.round(h*0.07);
+    g.fillStyle='rgba(20,18,15,0.72)';
+    g.fillRect(0,h-tagH,w*0.22,tagH);
+    g.fillRect(w+gap,h-tagH,w*0.22,tagH);
+    g.fillStyle='#fff'; g.font='bold '+Math.round(h*0.032)+'px sans-serif';
+    g.fillText('VOOR', 14, h - tagH*0.32);
+    g.fillText('NA', w+gap+14, h - tagH*0.32);
+
+    var customer = document.getElementById('customerInput').value.trim();
+    g.fillStyle = '#211F1B';
+    g.font = 'bold '+Math.round(footerH*0.4)+'px sans-serif';
+    var title = customer ? ('Kleurvoorbeeld — voor ' + customer) : 'Kleurvoorbeeld';
+    g.fillText(title, 14, h + footerH*0.4);
+
+    var chipSize = Math.round(footerH*0.22);
+    var cx = 14, cy = h + footerH*0.62;
+    g.font = Math.round(footerH*0.22)+'px sans-serif';
+    state.sections.filter(function(s){ return s.visible; }).forEach(function(s){
+      var label = s.name+' — '+closestRALShort(s.hex)+' ('+s.hex.toUpperCase()+')';
+      g.fillStyle = s.hex; g.fillRect(cx, cy-chipSize*0.8, chipSize, chipSize);
+      g.fillStyle = '#211F1B';
+      g.fillText(label, cx+chipSize+6, cy);
+      cx += chipSize + 6 + g.measureText(label).width + 26;
+    });
+
+    comp.toBlob(async function(blob){
+      if(!blob){ toast('Kon de afbeelding niet maken.', true); return; }
+      var filename = (customer ? customer.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'-' : '') + 'kleurvoorbeeld.png';
+      try{
+        var downloads = window.claude ? await window.claude.use('downloads') : null;
+        if(downloads){
+          var res = await downloads.save({ filename: filename, data: blob });
+          toast(res.status==='saved' ? 'Opgeslagen.' : 'Verzonden.');
+        } else {
+          toast('Opslaan is hier niet beschikbaar.', true);
+        }
+      } catch(e){
+        if(e && e.code==='declined'){ /* gebruiker heeft geweigerd, geen melding nodig */ }
+        else toast('Opslaan mislukt: ' + (e && e.message ? e.message : 'probeer het opnieuw'), true);
+      }
+    }, 'image/png');
+  }
+  function beforeSourceCanvas(){
+    var c = document.createElement('canvas'); c.width=state.width; c.height=state.height;
+    c.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(state.srcData), state.width, state.height), 0,0);
+    return c;
+  }
+
+  /* ============ boot: procedural sample ============ */
+  function boot(){
+    var sample = buildSampleRoom();
+    setImageFromCanvas(sample.canvas, true);
+    var walls = addSection('Muren', '#2271B3'); // RAL 5015 Hemelsblauw
+    walls.mask = maskFromRegion(state.width, state.height, [sample.regions.wallRect]);
+    var trim = addSection('Kozijnen', '#F6F6F6'); // RAL 9016 Verkeerswit
+    trim.mask = maskFromRegion(state.width, state.height, sample.regions.trimRects);
+    state.activeId = walls.id;
+    renderSections();
+    renderDesigns();
+    updateToolbarState();
+    setTool('wand');
+    scheduleRecolor();
+    drawMaskOverlay();
+    state.comparePos = 50;
+    updateCompareHandle();
+  }
+  boot();
+
+  window.addEventListener('resize', function(){ updateCompareHandle(); });
+})();
+</script>
