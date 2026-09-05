@@ -369,7 +369,7 @@
         </div>
         <div class="slider-wrap" id="wandSliderWrap">
           <label for="toleranceRange">Tolerantie</label>
-          <input type="range" id="toleranceRange" min="2" max="80" value="26">
+          <input type="range" id="toleranceRange" min="2" max="80" value="18">
         </div>
         <div class="slider-wrap" id="brushSliderWrap" style="display:none">
           <label for="brushRange">Kwastgrootte</label>
@@ -383,7 +383,7 @@
           <button class="icon-btn" id="clearMaskBtn" title="Selectie van dit onderdeel wissen" aria-label="Selectie wissen">
             <svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
           </button>
-          <button class="icon-btn" id="showMaskBtn" aria-pressed="true" title="Selectiemarkering aan/uit" aria-label="Selectiemarkering aan/uit">
+          <button class="icon-btn" id="showMaskBtn" aria-pressed="false" title="Selectiemarkering aan/uit (felroze, nooit de echte kleur)" aria-label="Selectiemarkering aan/uit">
             <svg class="i" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
         </div>
@@ -437,7 +437,7 @@
         <ul>
           <li>Kies een onderdeel (bijv. <em>Muren</em>) en klik op het kleurvlak om een kleur te kiezen.</li>
           <li>Gebruik de <strong>Toverstaf</strong> om op een oppervlak te klikken en het op kleur te selecteren — verhoog de Tolerantie als schaduwplekken worden gemist, verlaag hem als de selectie over een rand heen loopt naar een kozijn of muur.</li>
-          <li>De oranje markering laat precies zien wat er geselecteerd is — controleer dit vóórdat je een kleur kiest. Loopt de selectie toch door naar een ander vlak? Zet <strong>Wissen</strong> aan en gebruik de <strong>Kwast</strong> om dat stukje er handmatig af te halen.</li>
+          <li>Twijfel je of de selectie klopt? Zet het oogje aan voor een felroze markering (nooit de echte kleur) die precies laat zien wat geselecteerd is. Loopt het door naar een ander vlak? Zet <strong>Wissen</strong> aan en gebruik de <strong>Kwast</strong> om dat stukje er handmatig af te halen.</li>
           <li>Kleuren worden gekoppeld aan de dichtstbijzijnde RAL Classic-code om verf te bestellen — controleer dit altijd met een fysieke RAL-waaier.</li>
           <li>Schakel over naar <strong>Kwast</strong> om lastige randen zoals kozijnen of een raamkozijn met de hand te schilderen.</li>
           <li>Sleep de ↔ greep op de foto om voor en na te vergelijken.</li>
@@ -584,9 +584,9 @@
     currentDesignId:null,
     tool:'wand',
     mode:'add',
-    tolerance:26,
+    tolerance:18,
     brushSize:34,
-    showMask:true,
+    showMask:false,
     isSample:true,
     comparePos:50,
     painting:false
@@ -1076,12 +1076,13 @@
     var s = getActive();
     if(!s) return;
     var img = maskCtx.createImageData(w,h);
-    var t = hexToRgb('#1F5C73');
+    // A deliberately unmistakable marker colour (electric magenta) — no real paint looks
+    // like this, so it can never be misread as the actual chosen colour showing through.
     for(var i=0;i<s.mask.length;i++){
       var a = s.mask[i];
       if(!a) continue;
       var p=i*4;
-      img.data[p]=255; img.data[p+1]=90; img.data[p+2]=40; img.data[p+3]=Math.round(a*0.38);
+      img.data[p]=255; img.data[p+1]=0; img.data[p+2]=200; img.data[p+3]=Math.round(a*0.45);
     }
     maskCtx.putImageData(img,0,0);
   }
@@ -1105,7 +1106,7 @@
     // Checking each new pixel against its immediate neighbour, not just back to the seed,
     // stops the fill from bridging across that seam while still tolerating gradual shading
     // within one surface.
-    var edgeThreshold = 28;
+    var edgeThreshold = 20;
     var visited = new Uint8Array(w*h);
     var stack = [idx0];
     visited[idx0]=1;
@@ -1320,20 +1321,49 @@
 
     comp.toBlob(async function(blob){
       if(!blob){ toast('Kon de afbeelding niet maken.', true); return; }
-      var filename = (customer ? customer.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'-' : '') + 'kleurvoorbeeld.png';
-      try{
-        var downloads = window.claude ? await window.claude.use('downloads') : null;
-        if(downloads){
-          var res = await downloads.save({ filename: filename, data: blob });
-          toast(res.status==='saved' ? 'Opgeslagen.' : 'Verzonden.');
-        } else {
-          toast('Opslaan is hier niet beschikbaar.', true);
+      var filename = buildExportFilename(customer);
+
+      // Inside the Claude artifact viewer, a normal <a download> is blocked by the sandbox —
+      // that's what the "downloads" capability is for. Outside it (this hosted GitHub Pages
+      // version, or the standalone file), window.claude doesn't exist at all, so fall through
+      // to a plain browser download, which works everywhere else.
+      if(window.claude){
+        try{
+          var downloads = await window.claude.use('downloads');
+          if(downloads){
+            var res = await downloads.save({ filename: filename, data: blob });
+            toast(res.status==='saved' ? 'Opgeslagen.' : 'Verzonden.');
+            return;
+          }
+        } catch(e){
+          if(e && e.code==='declined') return; // user said no — no error toast needed
+          // otherwise fall through to the plain download below
         }
-      } catch(e){
-        if(e && e.code==='declined'){ /* gebruiker heeft geweigerd, geen melding nodig */ }
-        else toast('Opslaan mislukt: ' + (e && e.message ? e.message : 'probeer het opnieuw'), true);
+      }
+      try{
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+        toast('Afbeelding gedownload.');
+      } catch(e2){
+        toast('Opslaan mislukt: probeer het opnieuw.', true);
       }
     }, 'image/png');
+  }
+  function buildExportFilename(customer){
+    var parts = state.sections.filter(function(s){ return s.visible; }).map(function(s){
+      var ral = closestRALShort(s.hex).replace(/\s+/g,'');
+      var name = s.name.trim().replace(/[^a-z0-9]+/gi,'') || 'kleur';
+      return name+'-'+ral;
+    });
+    var extra = '';
+    if(parts.length>4){ extra = '+'+(parts.length-4); parts = parts.slice(0,4); }
+    var prefix = customer ? customer.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'_' : '';
+    return prefix + 'kleurvoorbeeld_' + parts.join('_') + extra + '.png';
   }
   function beforeSourceCanvas(){
     var c = document.createElement('canvas'); c.width=state.width; c.height=state.height;
