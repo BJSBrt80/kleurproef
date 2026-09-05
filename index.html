@@ -383,7 +383,7 @@
           <button class="icon-btn" id="clearMaskBtn" title="Selectie van dit onderdeel wissen" aria-label="Selectie wissen">
             <svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
           </button>
-          <button class="icon-btn" id="showMaskBtn" aria-pressed="false" title="Selectiemarkering aan/uit" aria-label="Selectiemarkering aan/uit">
+          <button class="icon-btn" id="showMaskBtn" aria-pressed="true" title="Selectiemarkering aan/uit" aria-label="Selectiemarkering aan/uit">
             <svg class="i" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
         </div>
@@ -436,7 +436,8 @@
         <h2>Zo werkt het</h2>
         <ul>
           <li>Kies een onderdeel (bijv. <em>Muren</em>) en klik op het kleurvlak om een kleur te kiezen.</li>
-          <li>Gebruik de <strong>Toverstaf</strong> om op een oppervlak te klikken en het op kleur te selecteren — verhoog de Tolerantie als schaduwplekken worden gemist.</li>
+          <li>Gebruik de <strong>Toverstaf</strong> om op een oppervlak te klikken en het op kleur te selecteren — verhoog de Tolerantie als schaduwplekken worden gemist, verlaag hem als de selectie over een rand heen loopt naar een kozijn of muur.</li>
+          <li>De oranje markering laat precies zien wat er geselecteerd is — controleer dit vóórdat je een kleur kiest. Loopt de selectie toch door naar een ander vlak? Zet <strong>Wissen</strong> aan en gebruik de <strong>Kwast</strong> om dat stukje er handmatig af te halen.</li>
           <li>Kleuren worden gekoppeld aan de dichtstbijzijnde RAL Classic-code om verf te bestellen — controleer dit altijd met een fysieke RAL-waaier.</li>
           <li>Schakel over naar <strong>Kwast</strong> om lastige randen zoals kozijnen of een raamkozijn met de hand te schilderen.</li>
           <li>Sleep de ↔ greep op de foto om voor en na te vergelijken.</li>
@@ -585,7 +586,7 @@
     mode:'add',
     tolerance:26,
     brushSize:34,
-    showMask:false,
+    showMask:true,
     isSample:true,
     comparePos:50,
     painting:false
@@ -1097,23 +1098,37 @@
     var w=state.width, h=state.height, data=state.srcData;
     var idx0 = sy*w+sx;
     var r0=data[idx0*4], g0=data[idx0*4+1], b0=data[idx0*4+2];
-    var threshold = (tolerance/100)*260;
+    var globalThreshold = (tolerance/100)*260;
+    // A real seam — wood meeting a wall, a window frame meeting brick — almost always has
+    // some visible step in colour right at the boundary, even when both sides individually
+    // land within range of the clicked colour (common with shadows/lighting in real photos).
+    // Checking each new pixel against its immediate neighbour, not just back to the seed,
+    // stops the fill from bridging across that seam while still tolerating gradual shading
+    // within one surface.
+    var edgeThreshold = 28;
     var visited = new Uint8Array(w*h);
     var stack = [idx0];
     visited[idx0]=1;
-    var touched = [];
+    var touched = [idx0];
+    function tryVisit(nIdx, cr, cg, cb){
+      if(visited[nIdx]) return;
+      var np=nIdx*4, nr=data[np], ng=data[np+1], nb=data[np+2];
+      var dr=nr-r0, dg=ng-g0, db=nb-b0;
+      if(Math.sqrt(dr*dr+dg*dg+db*db)>globalThreshold) return;
+      dr=nr-cr; dg=ng-cg; db=nb-cb;
+      if(Math.sqrt(dr*dr+dg*dg+db*db)>edgeThreshold) return;
+      visited[nIdx]=1;
+      stack.push(nIdx);
+      touched.push(nIdx);
+    }
     while(stack.length){
       var idx = stack.pop();
+      var p=idx*4, cr=data[p], cg=data[p+1], cb=data[p+2];
       var x = idx % w, y = (idx - x)/w;
-      var p = idx*4;
-      var dr=data[p]-r0, dg=data[p+1]-g0, db=data[p+2]-b0;
-      var dist = Math.sqrt(dr*dr+dg*dg+db*db);
-      if(dist>threshold) continue;
-      touched.push(idx);
-      if(x>0 && !visited[idx-1]){ visited[idx-1]=1; stack.push(idx-1); }
-      if(x<w-1 && !visited[idx+1]){ visited[idx+1]=1; stack.push(idx+1); }
-      if(y>0 && !visited[idx-w]){ visited[idx-w]=1; stack.push(idx-w); }
-      if(y<h-1 && !visited[idx+w]){ visited[idx+w]=1; stack.push(idx+w); }
+      if(x>0) tryVisit(idx-1, cr,cg,cb);
+      if(x<w-1) tryVisit(idx+1, cr,cg,cb);
+      if(y>0) tryVisit(idx-w, cr,cg,cb);
+      if(y<h-1) tryVisit(idx+w, cr,cg,cb);
     }
     pushUndo(section);
     for(var k=0;k<touched.length;k++){ section.mask[touched[k]] = erase ? 0 : 255; }
