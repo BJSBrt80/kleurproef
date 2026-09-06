@@ -652,6 +652,7 @@
 
     state.width = tw; state.height = th;
     state.srcData = data.data;
+    state.edgeRefData = null; // stale blur cache from any previous photo
     state.isSample = !!isSample;
 
     [el.outCanvas, el.beforeCanvas, el.maskCanvas].forEach(function(c){ c.width=tw; c.height=th; });
@@ -697,25 +698,28 @@
     var c = document.createElement('canvas'); c.width=w; c.height=h;
     var g = c.getContext('2d');
 
-    // wall
-    var wallGrad = g.createLinearGradient(0,0,0,h*0.72);
-    wallGrad.addColorStop(0,'#DCD6C6');
-    wallGrad.addColorStop(1,'#CFC8B4');
-    g.fillStyle = wallGrad;
-    g.fillRect(0,0,w,h*0.72);
-
-    // subtle wall texture / light falloff so colour-matching has real work to do
-    for(var i=0;i<2600;i++){
-      var x=Math.random()*w, y=Math.random()*h*0.72;
-      var shade = (Math.random()-0.5)*14;
-      g.fillStyle = 'rgba('+(shade>0?255:0)+','+(shade>0?255:0)+','+(shade>0?255:0)+','+(Math.abs(shade)/140)+')';
-      g.fillRect(x,y,26,26);
+    // wall — real brickwork (running bond, mortar joints, per-brick colour variation) so
+    // the demo exercises the same brick-and-mortar challenge as a real facade photo.
+    var wallH = h*0.72;
+    g.fillStyle = '#C7C0AC'; // mortar
+    g.fillRect(0,0,w,wallH);
+    var brickW=58, brickH=22, joint=5, rowH=brickH+joint;
+    for(var by=0; by*rowH < wallH+brickH; by++){
+      var rowOffset = (by%2===0) ? 0 : -Math.round(brickW/2);
+      for(var bx=rowOffset; bx<w; bx+=brickW+joint){
+        var tint=(Math.random()-0.5)*34;
+        var br=Math.max(0,Math.min(255,Math.round(198+tint+(Math.random()-0.5)*10)));
+        var bgc=Math.max(0,Math.min(255,Math.round(150+tint*0.8)));
+        var bb=Math.max(0,Math.min(255,Math.round(96+tint*0.6)));
+        g.fillStyle='rgb('+br+','+bgc+','+bb+')';
+        g.fillRect(bx, by*rowH, brickW, brickH);
+      }
     }
     var lightGrad = g.createRadialGradient(w*0.28,h*0.18,40, w*0.28,h*0.18, w*0.6);
-    lightGrad.addColorStop(0,'rgba(255,250,235,0.35)');
+    lightGrad.addColorStop(0,'rgba(255,250,235,0.30)');
     lightGrad.addColorStop(1,'rgba(255,250,235,0)');
     g.fillStyle = lightGrad;
-    g.fillRect(0,0,w,h*0.72);
+    g.fillRect(0,0,w,wallH);
 
     // floor
     var floorGrad = g.createLinearGradient(0,h*0.72,0,h);
@@ -1113,26 +1117,71 @@
     return { x: Math.max(0,Math.min(state.width-1, Math.round(x))), y: Math.max(0,Math.min(state.height-1, Math.round(y))) };
   }
 
-  function sampleAverageColor(data, w, h, cx, cy, radius){
+  function sampleAverageColor(data, w, h, cx, cy, radius, stride){
+    stride = stride || 4;
     var x0=Math.max(0,cx-radius), x1=Math.min(w-1,cx+radius);
     var y0=Math.max(0,cy-radius), y1=Math.min(h-1,cy+radius);
     var sr=0, sg=0, sb=0, n=0;
     for(var y=y0;y<=y1;y++){
       for(var x=x0;x<=x1;x++){
-        var p=(y*w+x)*4;
+        var p=(y*w+x)*stride;
         sr+=data[p]; sg+=data[p+1]; sb+=data[p+2]; n++;
       }
     }
     return { r: sr/n, g: sg/n, b: sb/n };
   }
 
+  // A separable box blur over RGB (alpha dropped — it's opaque photo data). Used only to
+  // decide what the wand should select; the actual paint is still rendered from the sharp
+  // original, so this never softens the final image.
+  function boxBlurRGB(data, w, h, radius){
+    var tmp = new Float32Array(w*h*3);
+    var out = new Float32Array(w*h*3);
+    var k = radius*2+1;
+    for(var y=0;y<h;y++){
+      var rowBase = y*w;
+      for(var x=0;x<w;x++){
+        var sr=0,sg=0,sb=0;
+        for(var dx=-radius; dx<=radius; dx++){
+          var xx = Math.min(w-1, Math.max(0, x+dx));
+          var p=(rowBase+xx)*4;
+          sr+=data[p]; sg+=data[p+1]; sb+=data[p+2];
+        }
+        var oi=(rowBase+x)*3;
+        tmp[oi]=sr/k; tmp[oi+1]=sg/k; tmp[oi+2]=sb/k;
+      }
+    }
+    for(var x2=0;x2<w;x2++){
+      for(var y2=0;y2<h;y2++){
+        var sr2=0,sg2=0,sb2=0;
+        for(var dy=-radius; dy<=radius; dy++){
+          var yy = Math.min(h-1, Math.max(0, y2+dy));
+          var oi2=(yy*w+x2)*3;
+          sr2+=tmp[oi2]; sg2+=tmp[oi2+1]; sb2+=tmp[oi2+2];
+        }
+        var o2=(y2*w+x2)*3;
+        out[o2]=sr2/k; out[o2+1]=sg2/k; out[o2+2]=sb2/k;
+      }
+    }
+    return out;
+  }
+  function getEdgeReferenceData(){
+    if(!state.edgeRefData || state.edgeRefData.length !== state.width*state.height*3){
+      // The blur needs to be noticeably WIDER than a mortar joint for it to actually dilute
+      // one — at the middle of the joint, most of the sample box has to fall on brick either
+      // side of it, not just more joint. Radius 4 (a 9x9 blur) comfortably covers typical
+      // joint widths while still leaving genuinely wide boundaries (a window frame, a trim
+      // board) clearly distinct on both sides.
+      state.edgeRefData = boxBlurRGB(state.srcData, state.width, state.height, 4);
+    }
+    return state.edgeRefData;
+  }
+
   function floodFill(section, sx, sy, tolerance, erase){
-    var w=state.width, h=state.height, data=state.srcData;
+    var w=state.width, h=state.height;
+    var ref = getEdgeReferenceData(); // blurred RGB, 3 channels/pixel, used for every colour decision below
     var idx0 = sy*w+sx;
-    // Average a small patch around the click instead of trusting one exact pixel — a real
-    // photo has grain, JPEG noise and anti-aliasing, so the single pixel under the cursor
-    // can land slightly off from the surface it visually belongs to.
-    var seed = sampleAverageColor(data, w, h, sx, sy, 3);
+    var seed = sampleAverageColor(ref, w, h, sx, sy, 1, 3);
     var r0=seed.r, g0=seed.g, b0=seed.b;
     var globalThreshold = (tolerance/100)*260;
     // A real seam — wood meeting a wall, a window frame meeting brick — almost always has
@@ -1140,11 +1189,11 @@
     // land within range of the clicked colour (common with shadows/lighting in real photos).
     // Checking each new pixel against its immediate neighbour, not just back to the seed,
     // stops the fill from bridging across that seam while still tolerating gradual shading
-    // within one surface. But brickwork is the opposite case: the jump between a brick and
-    // its mortar joint is a real, often large step in colour, yet it's all one surface that
-    // gets painted as a whole. Scaling this alongside Tolerance means raising that one slider
-    // is enough to fill a rough brick wall in a click or two, while the low default stays
-    // strict enough to keep separating genuinely different materials.
+    // within one surface. Brickwork is the opposite case: the jump between a brick and its
+    // mortar joint is a real, often large step in colour, yet it's all one surface that gets
+    // painted as a whole — the blurred reference (above) is what mainly handles that, by
+    // smoothing thin joints into their neighbours; scaling this threshold with Tolerance too
+    // gives a second lever for genuinely rough or heavily weathered surfaces.
     var edgeThreshold = 15 + (tolerance/100)*85;
     var visited = new Uint8Array(w*h);
     var stack = [idx0];
@@ -1152,7 +1201,7 @@
     var touched = [idx0];
     function tryVisit(nIdx, cr, cg, cb){
       if(visited[nIdx]) return;
-      var np=nIdx*4, nr=data[np], ng=data[np+1], nb=data[np+2];
+      var np=nIdx*3, nr=ref[np], ng=ref[np+1], nb=ref[np+2];
       var dr=nr-r0, dg=ng-g0, db=nb-b0;
       if(Math.sqrt(dr*dr+dg*dg+db*db)>globalThreshold) return;
       dr=nr-cr; dg=ng-cg; db=nb-cb;
@@ -1163,7 +1212,7 @@
     }
     while(stack.length){
       var idx = stack.pop();
-      var p=idx*4, cr=data[p], cg=data[p+1], cb=data[p+2];
+      var p=idx*3, cr=ref[p], cg=ref[p+1], cb=ref[p+2];
       var x = idx % w, y = (idx - x)/w;
       if(x>0) tryVisit(idx-1, cr,cg,cb);
       if(x<w-1) tryVisit(idx+1, cr,cg,cb);
