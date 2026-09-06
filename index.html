@@ -450,7 +450,7 @@
         <ul>
           <li>Kies een onderdeel (bijv. <em>Muren</em>) en klik op het kleurvlak om een kleur te kiezen.</li>
           <li>Gebruik de <strong>Toverstaf</strong> om op een oppervlak te klikken en het op kleur te selecteren — verhoog de Tolerantie als schaduwplekken worden gemist, verlaag hem als de selectie over een rand heen loopt naar een kozijn of muur.</li>
-          <li>Bij <strong>metselwerk</strong> springt de Toverstaf vaak alleen op de baksteen zelf, niet op het voegwerk ertussen — zet de Tolerantie flink hoger (richting het einde van de schuif) zodat baksteen en voeg in één keer meegenomen worden.</li>
+          <li>Bij <strong>metselwerk</strong> neemt de Toverstaf het voegwerk tussen de stenen automatisch mee — meestal is de standaardinstelling al genoeg. Werkt een klik toch niet door tot de rest van de muur, verhoog de Tolerantie dan met kleine stapjes; helemaal naar het einde van de schuif kan de selectie juist te ver laten doorlopen (bijv. naar een raamkozijn).</li>
           <li>Is een muur op de foto zelf al <strong>vlekkerig</strong> (bijv. afbladderende verf met blote steen)? Eén klik pakt dan vaak maar één tint. Klik met <strong>Toevoegen</strong> nog een keer op de andere tint om ze samen te voegen, en gebruik daarna de <strong>Kwast</strong> om kleine restjes bij te werken.</li>
           <li>Twijfel je of de selectie klopt? Zet het oogje aan voor een felroze markering (nooit de echte kleur) die precies laat zien wat geselecteerd is. Loopt het door naar een ander vlak? Zet <strong>Wissen</strong> aan en gebruik de <strong>Kwast</strong> om dat stukje er handmatig af te halen.</li>
           <li>Kleuren worden gekoppeld aan de dichtstbijzijnde RAL Classic-code om verf te bestellen — controleer dit altijd met een fysieke RAL-waaier.</li>
@@ -1126,6 +1126,64 @@
     return { r: sr/n, g: sg/n, b: sb/n };
   }
 
+  // Separable dilate/erode over a binary mask (max-filter / min-filter). Used together as a
+  // morphological "close" — dilate then erode by the same radius — which fills small enclosed
+  // gaps (a mortar joint between two selected bricks) without growing the selection's outer
+  // boundary outward into a large neighbouring area like a floor or a window: a straight edge
+  // dilated then eroded by the same amount returns to essentially the same edge, it's only
+  // fully-surrounded holes that stay filled in.
+  function dilateMask(mask, w, h, radius){
+    var tmp = new Uint8Array(w*h), out = new Uint8Array(w*h);
+    for(var y=0;y<h;y++){
+      var rowBase=y*w;
+      for(var x=0;x<w;x++){
+        var m=0;
+        for(var dx=-radius; dx<=radius && !m; dx++){
+          var xx=x+dx;
+          if(xx>=0 && xx<w && mask[rowBase+xx]) m=1;
+        }
+        tmp[rowBase+x]=m;
+      }
+    }
+    for(var x2=0;x2<w;x2++){
+      for(var y2=0;y2<h;y2++){
+        var m2=0;
+        for(var dy=-radius; dy<=radius && !m2; dy++){
+          var yy=y2+dy;
+          if(yy>=0 && yy<h && tmp[yy*w+x2]) m2=1;
+        }
+        out[y2*w+x2]=m2;
+      }
+    }
+    return out;
+  }
+  function erodeMask(mask, w, h, radius){
+    var tmp = new Uint8Array(w*h), out = new Uint8Array(w*h);
+    for(var y=0;y<h;y++){
+      var rowBase=y*w;
+      for(var x=0;x<w;x++){
+        var m=1;
+        for(var dx=-radius; dx<=radius && m; dx++){
+          var xx=Math.min(w-1, Math.max(0, x+dx));
+          if(!mask[rowBase+xx]) m=0;
+        }
+        tmp[rowBase+x]=m;
+      }
+    }
+    for(var x2=0;x2<w;x2++){
+      for(var y2=0;y2<h;y2++){
+        var m2=1;
+        for(var dy=-radius; dy<=radius && m2; dy++){
+          var yy=Math.min(h-1, Math.max(0, y2+dy));
+          if(!tmp[yy*w+x2]) m2=0;
+        }
+        out[y2*w+x2]=m2;
+      }
+    }
+    return out;
+  }
+  var GAP_CLOSE_RADIUS = 4; // bridges gaps (mortar joints) up to about 8px wide at working resolution
+
   function floodFill(section, sx, sy, tolerance, erase){
     var w=state.width, h=state.height, data=state.srcData;
     var idx0 = sy*w+sx;
@@ -1140,12 +1198,11 @@
     // land within range of the clicked colour (common with shadows/lighting in real photos).
     // Checking each new pixel against its immediate neighbour, not just back to the seed,
     // stops the fill from bridging across that seam while still tolerating gradual shading
-    // within one surface. But brickwork is the opposite case: the jump between a brick and
-    // its mortar joint is a real, often large step in colour, yet it's all one surface that
-    // gets painted as a whole. Scaling this alongside Tolerance means raising that one slider
-    // is enough to fill a rough brick wall in a click or two, while the low default stays
-    // strict enough to keep separating genuinely different materials.
-    var edgeThreshold = 15 + (tolerance/100)*85;
+    // within one surface. This used to scale much further with Tolerance to help bridge
+    // mortar joints directly, but that made it easy to also bridge into a window or floor at
+    // higher settings — now that the gap-closing pass below handles mortar joints on its own,
+    // this only needs a modest scale-up, kept mainly for ordinary shading/lighting variation.
+    var edgeThreshold = 15 + (tolerance/100)*35;
     var visited = new Uint8Array(w*h);
     var stack = [idx0];
     visited[idx0]=1;
@@ -1170,8 +1227,17 @@
       if(y>0) tryVisit(idx-w, cr,cg,cb);
       if(y<h-1) tryVisit(idx+w, cr,cg,cb);
     }
+    // Fill small enclosed gaps left by mortar joints — this only stitches together holes
+    // that are already surrounded by the selection above, it cannot reach into a separate
+    // unselected area like a floor or a window.
+    var localMask = new Uint8Array(w*h);
+    for(var t=0;t<touched.length;t++) localMask[touched[t]]=1;
+    var closed = erodeMask(dilateMask(localMask, w, h, GAP_CLOSE_RADIUS), w, h, GAP_CLOSE_RADIUS);
+
     pushUndo(section);
-    for(var k=0;k<touched.length;k++){ section.mask[touched[k]] = erase ? 0 : 255; }
+    for(var i=0;i<closed.length;i++){
+      if(closed[i]) section.mask[i] = erase ? 0 : 255;
+    }
   }
 
   function brushStroke(section, cx, cy, radius, erase, isFirst){
