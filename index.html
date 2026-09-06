@@ -451,6 +451,7 @@
           <li>Kies een onderdeel (bijv. <em>Muren</em>) en klik op het kleurvlak om een kleur te kiezen.</li>
           <li>Gebruik de <strong>Toverstaf</strong> om op een oppervlak te klikken en het op kleur te selecteren — verhoog de Tolerantie als schaduwplekken worden gemist, verlaag hem als de selectie over een rand heen loopt naar een kozijn of muur.</li>
           <li>Bij <strong>metselwerk</strong> springt de Toverstaf vaak alleen op de baksteen zelf, niet op het voegwerk ertussen — zet de Tolerantie flink hoger (richting het einde van de schuif) zodat baksteen en voeg in één keer meegenomen worden.</li>
+          <li>Is een muur op de foto zelf al <strong>vlekkerig</strong> (bijv. afbladderende verf met blote steen)? Eén klik pakt dan vaak maar één tint. Klik met <strong>Toevoegen</strong> nog een keer op de andere tint om ze samen te voegen, en gebruik daarna de <strong>Kwast</strong> om kleine restjes bij te werken.</li>
           <li>Twijfel je of de selectie klopt? Zet het oogje aan voor een felroze markering (nooit de echte kleur) die precies laat zien wat geselecteerd is. Loopt het door naar een ander vlak? Zet <strong>Wissen</strong> aan en gebruik de <strong>Kwast</strong> om dat stukje er handmatig af te halen.</li>
           <li>Kleuren worden gekoppeld aan de dichtstbijzijnde RAL Classic-code om verf te bestellen — controleer dit altijd met een fysieke RAL-waaier.</li>
           <li>Schakel over naar <strong>Kwast</strong> om lastige randen zoals kozijnen of een raamkozijn met de hand te schilderen.</li>
@@ -1112,10 +1113,27 @@
     return { x: Math.max(0,Math.min(state.width-1, Math.round(x))), y: Math.max(0,Math.min(state.height-1, Math.round(y))) };
   }
 
+  function sampleAverageColor(data, w, h, cx, cy, radius){
+    var x0=Math.max(0,cx-radius), x1=Math.min(w-1,cx+radius);
+    var y0=Math.max(0,cy-radius), y1=Math.min(h-1,cy+radius);
+    var sr=0, sg=0, sb=0, n=0;
+    for(var y=y0;y<=y1;y++){
+      for(var x=x0;x<=x1;x++){
+        var p=(y*w+x)*4;
+        sr+=data[p]; sg+=data[p+1]; sb+=data[p+2]; n++;
+      }
+    }
+    return { r: sr/n, g: sg/n, b: sb/n };
+  }
+
   function floodFill(section, sx, sy, tolerance, erase){
     var w=state.width, h=state.height, data=state.srcData;
     var idx0 = sy*w+sx;
-    var r0=data[idx0*4], g0=data[idx0*4+1], b0=data[idx0*4+2];
+    // Average a small patch around the click instead of trusting one exact pixel — a real
+    // photo has grain, JPEG noise and anti-aliasing, so the single pixel under the cursor
+    // can land slightly off from the surface it visually belongs to.
+    var seed = sampleAverageColor(data, w, h, sx, sy, 3);
+    var r0=seed.r, g0=seed.g, b0=seed.b;
     var globalThreshold = (tolerance/100)*260;
     // A real seam — wood meeting a wall, a window frame meeting brick — almost always has
     // some visible step in colour right at the boundary, even when both sides individually
