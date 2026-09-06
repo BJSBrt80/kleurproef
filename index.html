@@ -450,6 +450,7 @@
         <ul>
           <li>Kies een onderdeel (bijv. <em>Muren</em>) en klik op het kleurvlak om een kleur te kiezen.</li>
           <li>Gebruik de <strong>Toverstaf</strong> om op een oppervlak te klikken en het op kleur te selecteren — verhoog de Tolerantie als schaduwplekken worden gemist, verlaag hem als de selectie over een rand heen loopt naar een kozijn of muur.</li>
+          <li>Bij <strong>metselwerk</strong> springt de Toverstaf vaak alleen op de baksteen zelf, niet op het voegwerk ertussen — zet de Tolerantie flink hoger (richting het einde van de schuif) zodat baksteen en voeg in één keer meegenomen worden.</li>
           <li>Twijfel je of de selectie klopt? Zet het oogje aan voor een felroze markering (nooit de echte kleur) die precies laat zien wat geselecteerd is. Loopt het door naar een ander vlak? Zet <strong>Wissen</strong> aan en gebruik de <strong>Kwast</strong> om dat stukje er handmatig af te halen.</li>
           <li>Kleuren worden gekoppeld aan de dichtstbijzijnde RAL Classic-code om verf te bestellen — controleer dit altijd met een fysieke RAL-waaier.</li>
           <li>Schakel over naar <strong>Kwast</strong> om lastige randen zoals kozijnen of een raamkozijn met de hand te schilderen.</li>
@@ -1121,8 +1122,12 @@
     // land within range of the clicked colour (common with shadows/lighting in real photos).
     // Checking each new pixel against its immediate neighbour, not just back to the seed,
     // stops the fill from bridging across that seam while still tolerating gradual shading
-    // within one surface.
-    var edgeThreshold = 20;
+    // within one surface. But brickwork is the opposite case: the jump between a brick and
+    // its mortar joint is a real, often large step in colour, yet it's all one surface that
+    // gets painted as a whole. Scaling this alongside Tolerance means raising that one slider
+    // is enough to fill a rough brick wall in a click or two, while the low default stays
+    // strict enough to keep separating genuinely different materials.
+    var edgeThreshold = 15 + (tolerance/100)*85;
     var visited = new Uint8Array(w*h);
     var stack = [idx0];
     visited[idx0]=1;
