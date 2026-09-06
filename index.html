@@ -1457,7 +1457,10 @@
   });
   el.compareHandle.addEventListener('pointermove', function(ev){ if(draggingHandle) setComparePosFromEvent(ev); });
   ['pointerup','pointercancel'].forEach(function(n){ el.compareHandle.addEventListener(n, function(){ draggingHandle=false; }); });
-  el.stageInner.addEventListener('dblclick', function(){ state.comparePos = state.comparePos>50? 0:100; updateCompareHandle(); });
+  // Deliberately no double-click/double-tap shortcut here anymore — it directly collided
+  // with clicking the Wand twice in quick succession on two different surfaces (the normal
+  // way to build up a selection with Toevoegen), snapping the slider to one side mid-workflow.
+  // Dragging the handle already covers moving fully to either side.
 
   /* ============ upload / dnd ============ */
   document.getElementById('uploadBtn').addEventListener('click', function(){ el.fileInput.click(); });
