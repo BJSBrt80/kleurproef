@@ -1394,10 +1394,20 @@
     if(state.zoom<=1.001){
       el.stage.classList.remove('zoomed');
       el.stageInner.style.width=''; el.stageInner.style.maxWidth='';
+      el.outCanvas.style.width=''; // back to its natural fit-to-container size
     } else {
       el.stage.classList.add('zoomed');
       el.stageInner.style.maxWidth='none';
       el.stageInner.style.width=(state.zoom*100)+'%';
+      // outCanvas is the one canvas NOT sized via the .overlay rule (width/height:100% of
+      // stage-inner) — it only had "max-width:100%", a ceiling that stops mattering once
+      // stage-inner grows past the canvas's own native pixel resolution. Past that point the
+      // "after" layer stopped growing while "before" and the click-handling layer kept
+      // scaling with it, so half the comparison silently desynced from the other half (and
+      // from where clicks actually landed) once zoomed in far enough on a photo of normal
+      // size. Forcing it to the same 100%-of-container sizing as its sibling layers keeps
+      // all three canvases in lockstep at every zoom level.
+      el.outCanvas.style.width='100%';
     }
   }
   function setZoom(newZoom){
